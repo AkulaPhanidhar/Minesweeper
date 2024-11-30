@@ -290,32 +290,12 @@ Each invalid CSV violates at least one of the validation rules.
 
    It's recommended to use a virtual environment to manage dependencies.
 
-   ### **Mac/Linux Instructions**
-
-   1. **Create a Virtual Environment**:
-
    ```bash
-   python3 -m venv venv
+   python3 -m venv venv  # On Windows: python -m venv venv
    ```
 
-   2. **Activate the Virtual Environment**:
-
    ```bash
-   source venv/bin/activate
-   ```
-
-   ### **Windows Instructions**
-
-   1. **Create a Virtual Environment**:
-
-   ```bash
-   python -m venv venv
-   ```
-
-   2. **Activate the Virtual Environment**:
-
-   ```bash
-   venv\Scripts\activate
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 3. **Install Dependencies**
