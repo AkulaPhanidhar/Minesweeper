@@ -290,12 +290,32 @@ Each invalid CSV violates at least one of the validation rules.
 
    It's recommended to use a virtual environment to manage dependencies.
 
+   ### **Mac/Linux Instructions**
+
+   1. **Create a Virtual Environment**:
+
    ```bash
    python3 -m venv venv
    ```
 
+   2. **Activate the Virtual Environment**:
+
    ```bash
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   source venv/bin/activate
+   ```
+
+   ### **Windows Instructions**
+
+   1. **Create a Virtual Environment**:
+
+   ```bash
+   python -m venv venv
+   ```
+
+   2. **Activate the Virtual Environment**:
+
+   ```bash
+   venv\Scripts\activate
    ```
 
 3. **Install Dependencies**
@@ -331,7 +351,7 @@ Each invalid CSV violates at least one of the validation rules.
 
    ```
    Would you like to enter testing mode? (y/n): y
-   Enter the path to the test board CSV file: ./valid_board_1.csv
+   Enter the path to the test board CSV file: ./Valid/Board_1.csv
 
    Test board is valid with 10 mines and 2 treasures. Starting the game...
    ```
