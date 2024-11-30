@@ -1,7 +1,3 @@
-Certainly! Below is a **comprehensive project report** for your **Minesweeper with Hidden Treasure** game. This report encompasses all aspects of the project, including its **introduction**, **objectives**, **features**, **architecture**, **design principles**, **testing methodologies**, **installation and usage instructions**, **challenges and solutions**, and **future work**. The report is formatted in Markdown for clarity and ease of reading.
-
----
-
 # Minesweeper with Hidden Treasure - Project Report
 
 ## Table of Contents
@@ -335,8 +331,9 @@ Each invalid CSV violates at least one of the validation rules.
 
    ```
    Would you like to enter testing mode? (y/n): y
-   Enter the path to the test board CSV file: ./lol.csv
-   Test board is valid with 10 mines and 2 treasures. Starting the game.
+   Enter the path to the test board CSV file: ./valid_board_1.csv
+
+   Test board is valid with 10 mines and 2 treasures. Starting the game...
    ```
 
    - **Loading a Valid CSV**
@@ -358,14 +355,14 @@ Each invalid CSV violates at least one of the validation rules.
    - **Example Valid CSV**
 
      ```
-     1,1,0,0,0,0,0,1
+     0,0,0,0,0,0,1,2
      0,0,1,1,0,0,0,0
-     0,0,0,0,1,0,0,0
+     0,0,0,0,1,0,0,2
+     0,0,0,0,0,0,1,0
+     0,1,0,0,0,0,0,0
+     0,0,0,1,0,0,0,0
      0,0,0,0,0,1,0,0
-     0,0,0,0,0,0,1,0
-     0,0,0,0,0,0,1,0
-     0,0,0,0,0,0,0,1
-     1,0,0,0,0,0,0,2
+     1,0,0,0,0,0,0,1
      ```
 
    - **Loading an Invalid CSV**
@@ -528,5 +525,3 @@ While the current version of **Minesweeper with Hidden Treasure** is feature-ric
 - [Model-View-Controller (MVC) Design Pattern](https://en.wikipedia.org/wiki/Model–view–controller)
 - [Design by Contract (DBC) Principles](https://en.wikipedia.org/wiki/Design_by_contract)
 - [Python CSV Module](https://docs.python.org/3/library/csv.html)
-
----
