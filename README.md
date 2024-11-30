@@ -1,4 +1,4 @@
-# Minesweeper with Hidden Treasure - Project Report
+# Minesweeper with Hidden Treasure
 
 ## Table of Contents
 
@@ -309,7 +309,7 @@ Each invalid CSV violates at least one of the validation rules.
 1. **Run the Game**
 
    ```bash
-   python minesweeper.py
+   python3 minesweeper.py
    ```
 
 2. **Selecting Game Level**
