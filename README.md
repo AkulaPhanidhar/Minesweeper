@@ -427,6 +427,14 @@ Your previous game state, including revealed cells, flags, and timer, will be re
 
 ### GUI Mode
 
+```
+Choose a view:
+1. GUI
+2. Text
+
+Enter the number:
+```
+
 Selecting `1` launches the graphical interface.
 
 ```
