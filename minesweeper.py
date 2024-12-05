@@ -824,7 +824,8 @@ def main():
         - Launches the chosen view (GUI or Text) for gameplay.
         - Handles invalid user inputs by prompting again.
     """
-    print("\nChoose a level:")
+    print("\nWelcome to Minesweeper with Hidden Treasures!\n")
+    print("Choose a level:")
     print(f"1. Beginner (8x8, 10 mines, {levels['beginner']['num_treasures']} treasures)")
     print(f"2. Intermediate (16x16, 40 mines, {levels['intermediate']['num_treasures']} treasures)")
     print(f"3. Expert (30x16, 99 mines, {levels['expert']['num_treasures']} treasures)")
