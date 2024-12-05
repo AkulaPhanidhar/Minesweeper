@@ -14,19 +14,22 @@
    - [Testing Mode with CSV Board Loading](#testing-mode-with-csv-board-loading)
    - [Validation Rules](#validation-rules)
    - [Sample CSV Files](#sample-csv-files)
-7. [Installation](#installation)
-8. [Usage](#usage)
+7. [Requirements](#requirements)
+8. [Installation](#installation)
+9. [Usage](#usage)
    - [Selecting Game Level](#selecting-game-level)
    - [Testing Mode](#testing-mode)
      - [Valid CSV Files](#valid-csv-files)
      - [Invalid CSV Files](#invalid-csv-files)
+   - [Saving and Loading Games](#saving-and-loading-games)
    - [GUI Mode](#gui-mode)
+     - [Flagging Cells (Mac and Windows)](#flagging-cells-mac-and-windows)
    - [Text Mode](#text-mode)
-9. [Gameplay Mechanics](#gameplay-mechanics)
-10. [Challenges and Solutions](#challenges-and-solutions)
-11. [Future Work](#future-work)
-12. [Conclusion](#conclusion)
-13. [References](#references)
+10. [Gameplay Mechanics](#gameplay-mechanics)
+11. [Challenges and Solutions](#challenges-and-solutions)
+12. [Future Work](#future-work)
+13. [Conclusion](#conclusion)
+14. [References](#references)
 
 ---
 
@@ -42,6 +45,7 @@
 - **Dual Interfaces**: Offer both GUI and Text-based console views to accommodate various user preferences.
 - **Robust Architecture**: Implement the MVC design pattern to maintain a clear separation between the game's logic, interface, and control mechanisms.
 - **Testing Capabilities**: Allow loading predefined game boards via CSV files to facilitate thorough testing and ensure game integrity.
+- **Game Saving and Loading**: Enable players to save their game progress and resume later, enhancing user convenience.
 - **Code Reliability**: Incorporate Design by Contract (DBC) principles to specify method preconditions and postconditions, enhancing code reliability and maintainability.
 
 ---
@@ -50,8 +54,9 @@
 
 - **Dual Interface**: Users can choose between a user-friendly GUI built with Tkinter or a straightforward Text-based console interface.
 - **Hidden Treasure**: Besides mines, a hidden treasure is randomly placed on the board. Finding the treasure results in an immediate win.
+- **Game Saving and Loading**: Ability to save the game at any point (except in Testing Mode) and resume later. Cross-platform support for both Windows and MacOS.
 - **MVC Architecture**: Organized using the Model-View-Controller pattern for better code management and scalability.
-- **Flagging Mechanism**: Right-click (GUI) or input `f x y` (Text) to flag or unflag suspected mines.
+- **Flagging Mechanism**: Right-click (GUI) or input `f x y` (Text) to flag or unflag suspected mines. Special considerations are made for MacOS users.
 - **Timer**: Track the duration of your game.
 - **Replayability**: Option to play again after a game ends.
 - **Testing Mode**: Load predefined game boards from CSV files to test specific scenarios and ensure game integrity.
@@ -274,6 +279,48 @@ Each invalid CSV violates at least one of the validation rules.
 
 ---
 
+## Requirements
+
+- **Python 3.6 or higher**: The game is developed using Python 3.6 and above. Ensure that you have Python installed on your system.
+
+- **Tkinter**: Required for the Graphical User Interface (GUI) version of the game. Tkinter is included with most Python installations, but on some systems, you may need to install it separately.
+
+### Installing Tkinter
+
+Depending on your operating system, follow the instructions below to install Tkinter if it's not already available:
+
+- **Windows and macOS**:
+
+  - Tkinter usually comes pre-installed with Python on these operating systems. If you encounter an error related to Tkinter, consider reinstalling Python and ensure that the option to install Tkinter is selected during the installation process.
+
+- **Linux**:
+
+  - **Ubuntu/Debian-based systems**:
+
+    ```bash
+    sudo apt-get install python3-tk
+    ```
+
+  - **Fedora**:
+
+    ```bash
+    sudo dnf install python3-tkinter
+    ```
+
+  - **Arch Linux**:
+
+    ```bash
+    sudo pacman -S tk
+    ```
+
+### Additional Notes
+
+- **No External Dependencies**: The game uses only Python's standard library modules. There are no additional packages to install via `pip`.
+
+Ensure that you have the necessary permissions and that your system meets the above requirements to enjoy **Minesweeper with Hidden Treasure**.
+
+---
+
 ## Installation
 
 1. **Clone the Repository**
@@ -306,117 +353,145 @@ Each invalid CSV violates at least one of the validation rules.
 
 ## Usage
 
-1. **Run the Game**
+- **Running the Game**:
 
-   ```bash
-   python3 minesweeper.py
-   ```
+  After ensuring all requirements are met, you can run the game using:
 
-2. **Selecting Game Level**
+  ```bash
+  python3 minesweeper.py  # On Windows: python minesweeper.py
+  ```
 
-   Upon starting, you'll be prompted to select a difficulty level:
+### Selecting Game Level
 
-   ```
-   Choose a level:
-   1. Beginner (8x8, 10 mines, 2 treasures)
-   2. Intermediate (16x16, 40 mines, 4 treasures)
-   3. Expert (30x16, 99 mines, 6 treasures)
+Upon starting, you'll be prompted to select a difficulty level:
 
-   Enter the number:
-   ```
+```
+Choose a level:
+1. Beginner (8x8, 10 mines, 2 treasures)
+2. Intermediate (16x16, 40 mines, 4 treasures)
+3. Expert (30x16, 99 mines, 6 treasures)
 
-3. **Testing Mode (Beginner Level Only)**
+Enter the number:
+```
 
-   After selecting the Beginner level, you'll have the option to enter Testing Mode to load a predefined board from a CSV file.
+### Testing Mode
 
-   ```
-   Would you like to enter testing mode? (y/n): y
-   Enter the path to the test board CSV file: ./Valid/Board_1.csv
+After selecting the Beginner level, you'll have the option to enter Testing Mode to load a predefined board from a CSV file.
 
-   Test board is valid with 10 mines and 2 treasures. Starting the game...
-   ```
+```
+Would you like to enter testing mode? (y/n): y
+Enter the path to the test board CSV file: ./Valid/Board_1.csv
 
-   - **Loading a Valid CSV**
+Test board is valid with 10 mines and 2 treasures. Starting the game...
+```
 
-     Ensure your CSV file adheres to the following rules:
+- **Loading a Valid CSV**
 
-     - **Format**: 8 rows with 8 values each, separated by commas.
-     - **Values**:
-       - `0`: Empty cell.
-       - `1`: Mine.
-       - `2`: Treasure.
-     - **Validation Rules**:
-       - Exactly 10 mines (`1`).
-       - At least one mine in each row and each column.
-       - Only one mine on the main diagonal (where row index equals column index).
-       - Exactly one pair of adjacent mines (horizontally or vertically).
-       - At least one treasure and no more than 9 treasures.
+  Ensure your CSV file adheres to the validation rules mentioned earlier.
 
-   - **Example Valid CSV**
+### Saving and Loading Games
 
-     ```
-     0,0,0,0,0,0,1,2
-     0,0,1,1,0,0,0,0
-     0,0,0,0,1,0,0,2
-     0,0,0,0,0,0,1,0
-     0,1,0,0,0,0,0,0
-     0,0,0,1,0,0,0,0
-     0,0,0,0,0,1,0,0
-     1,0,0,0,0,0,0,1
-     ```
+The game supports saving and loading your progress, except in Testing Mode.
 
-   - **Loading an Invalid CSV**
+#### Saving the Game
 
-     If the CSV does not meet the validation criteria, the game will inform you of the specific issue and prompt whether to retry or proceed with a random board.
+- **GUI Mode**:
 
-     ```
-     Invalid board: Number of mines must be exactly 10. Found 9.
-     Would you like to try entering testing mode again? (y/n): n
-     ```
+  - **Windows and MacOS**:
 
-4. **Choose the View**
+    - While playing the game, click on the **'File'** menu at the top of the game window.
+    - Select **'Quit'** from the dropdown menu.
+    - The game will automatically save your current state and exit.
+    - **Note**: In Testing Mode, the save and quit feature is disabled.
 
-   After setting up the game (either in testing mode or normal mode), you'll be prompted to choose between the GUI and Text views.
+- **Text Mode**:
 
-   ```
-   Choose a view:
-   1. GUI
-   2. Text
+  - **Windows and MacOS**:
 
-   Enter the number:
-   ```
+    - At any time during the game, you can enter the command **`q`** to quit.
+    - The game will save your current state and exit.
+    - **Note**: In Testing Mode, the save and quit feature is disabled.
 
-   - **GUI Mode**
+#### Loading a Saved Game
 
-     Selecting `1` launches the graphical interface.
+When you start the game and select the same level where you have a saved game, you will be prompted:
 
-     ```
-     --------------------
-     Opening GUI View...
-     --------------------
-     ```
+```
+Do you want to continue with the previous game or start again? (c/s):
+```
 
-     - **Interacting with the GUI**:
-       - **Reveal a Cell**: Left-click on a cell to reveal it.
-       - **Flag/Unflag a Cell**: Right-click on a cell to flag or unflag it.
-       - **Game Over**: If you reveal a mine, you lose. If you find the treasure, you win.
-       - **Restart or Exit**: Upon game conclusion, you'll be prompted to play again or exit.
+- Enter **`c`** to continue with your saved game.
+- Enter **`s`** to start a new game.
 
-   - **Text Mode**
+Your previous game state, including revealed cells, flags, and timer, will be restored if you choose to continue.
 
-     Selecting `2` launches the console-based interface.
+### GUI Mode
 
-     ```
-     --------------------
-     Opening Text View...
-     --------------------
-     ```
+Selecting `1` launches the graphical interface.
 
-     - **Interacting with the Text View**:
-       - **Reveal a Cell**: Enter `r x y`, where `x` and `y` are the row and column numbers (1-based).
-       - **Flag/Unflag a Cell**: Enter `f x y`, where `x` and `y` are the row and column numbers (1-based).
-       - **Game Over**: Revealing a mine results in a loss, while finding the treasure results in a win.
-       - **Restart or Exit**: After the game concludes, you'll be prompted to play again or exit.
+```
+--------------------
+Opening GUI View...
+--------------------
+```
+
+#### Interacting with the GUI
+
+- **Reveal a Cell**:
+
+  - **Windows and MacOS**:
+
+    - **Left-click** on a cell to reveal it.
+
+- **Flag/Unflag a Cell**:
+
+  - **Windows**:
+
+    - **Right-click** on a cell to flag or unflag it.
+
+  - **MacOS**:
+
+    - **Option 1**: **Right-click** on a cell (if you have a mouse with a right-click button).
+    - **Option 2**: **Control + Click** on a cell.
+    - **Option 3**: **Two-finger tap** on the trackpad (if configured for right-click).
+
+#### Flagging Cells (Mac and Windows)
+
+Due to differences in event handling between MacOS and Windows, the game binds multiple events to accommodate flagging actions.
+
+- **Windows**:
+
+  - **Right-click**: Standard right-click action works for flagging.
+
+- **MacOS**:
+
+  - **Control + Click**: Hold the **Control** key and **click** to flag a cell.
+  - **Two-finger Tap**: Perform a two-finger tap on the trackpad (if configured as right-click).
+  - **Right-click**: If using a mouse with a right-click button.
+
+### Text Mode
+
+Selecting `2` launches the console-based interface.
+
+```
+--------------------
+Opening Text View...
+--------------------
+```
+
+#### Interacting with the Text View
+
+- **Reveal a Cell**:
+
+  - Enter **`r x y`**, where `x` and `y` are the row and column numbers (1-based index).
+
+- **Flag/Unflag a Cell**:
+
+  - Enter **`f x y`**, where `x` and `y` are the row and column numbers (1-based index).
+
+- **Quit the Game**:
+
+  - Enter **`q`** to save and quit the game (not available in Testing Mode).
 
 ---
 
@@ -435,11 +510,26 @@ Each invalid CSV violates at least one of the validation rules.
 
   - **Revealing Cells**: Revealing a cell without a mine or treasure will display the number of adjacent mines.
   - **Flagging Cells**: Use flags to mark cells you believe contain mines.
+  - **Saving and Quitting**:
+
+    - **GUI Mode**: Use the 'Quit' option in the 'File' menu to save and exit.
+    - **Text Mode**: Enter **`q`** to save and exit.
+
+  - **Resuming a Saved Game**: Start the game and select the same level to be prompted to continue your previous game.
+
   - **Winning the Game**:
+
     - Reveal all safe cells.
     - Find the hidden treasure.
+
   - **Losing the Game**:
+
     - Reveal a mine.
+
+  - **Game Over**:
+
+    - **GUI Mode**: The game will display all mines and treasures, and prompt you to play again or exit.
+    - **Text Mode**: All mines and treasures will be revealed before displaying the game over message.
 
 - **Timer**: Keep track of how long you take to complete the game.
 
@@ -449,29 +539,23 @@ Each invalid CSV violates at least one of the validation rules.
 
 During the development of **Minesweeper with Hidden Treasure**, several challenges were encountered. Below are the key challenges and the solutions implemented to overcome them:
 
-1. **Ensuring Test Board Utilization Across Views**
+1. **Cross-Platform Event Handling for Flagging**
 
-   - **Challenge**: After loading a valid test board from a CSV file, the GUI and Text views were not consistently using the predefined board, resulting in random boards being generated instead.
-   - **Solution**: Updated the `GameModel` to internally store the `test_board` and modified the initialization logic to prioritize loading from `test_board` when available. This ensured that both GUI and Text views consistently used the predefined board in Testing Mode.
+   - **Challenge**: Implementing a consistent flagging mechanism in the GUI across different operating systems, given that MacOS and Windows handle mouse events differently.
 
-2. **Maintaining Line Count and Functionality**
+   - **Solution**: Bound multiple events for flagging actions, including `"<Button-2>"`, `"<Button-3>"`, and `"<Control-Button-1>"`. This approach ensures that right-clicking, control-clicking, or middle-clicking can trigger the flagging action on both MacOS and Windows.
 
-   - **Challenge**: After updates, the line count of the code was significantly reduced, raising concerns about potential loss of functionality.
-   - **Solution**: Conducted a thorough review to ensure that all functionalities from the original code were preserved. Confirmed that essential features like MVC architecture, Testing Mode, flagging, timer, and game over mechanisms were intact. Optimized code for better readability and efficiency without sacrificing functionality.
+2. **Implementing Game Saving and Loading**
 
-3. **Implementing Design by Contract (DBC)**
+   - **Challenge**: Allowing users to save and load their game state, ensuring that the game resumes exactly where it was left off, without introducing inconsistencies or security issues.
 
-   - **Challenge**: Integrating DBC annotations (`Requires:` and `Ensures:`) without cluttering the code or affecting performance.
-   - **Solution**: Added DBC annotations as structured docstrings within each method, clearly specifying preconditions and postconditions. This approach maintained code cleanliness while enhancing documentation and reliability.
+   - **Solution**: Used Python's `pickle` module to serialize and deserialize the game state. Implemented save functionality when the user quits the game, and load functionality when the game starts and detects a saved game for the selected level. Ensured that saving is disabled in Testing Mode to maintain the integrity of test scenarios.
 
-4. **CSV Validation Complexity**
+3. **Ensuring Game Saving Compatibility Across Platforms**
 
-   - **Challenge**: Implementing comprehensive validation rules for CSV files to ensure game integrity.
-   - **Solution**: Developed a robust `load_and_validate_test_board` function that meticulously checks each validation rule, providing specific error messages for different types of validation failures. This facilitated easier debugging and user guidance when loading invalid CSV files.
+   - **Challenge**: Ensuring that game saving and loading works seamlessly on both Windows and MacOS, considering file system differences and potential permission issues.
 
-5. **User Experience in Testing Mode**
-   - **Challenge**: Ensuring a seamless user experience when entering and exiting Testing Mode, especially when dealing with invalid CSV files.
-   - **Solution**: Implemented clear and informative prompts that guide users through the Testing Mode process. Provided options to retry loading a CSV file or proceed with a random board if validation fails, enhancing user control and flexibility.
+   - **Solution**: Used standard Python file operations that are compatible across platforms. Tested the saving and loading functionality on both operating systems to confirm consistent behavior.
 
 ---
 
@@ -495,26 +579,23 @@ While the current version of **Minesweeper with Hidden Treasure** is feature-ric
 
    - Implement a high scores system to track and display the fastest completion times, fostering competition among players.
 
-5. **Save and Load Game State**
-
-   - Allow players to save their current game state and resume later, providing greater flexibility and convenience.
-
-6. **Customization Options**
+5. **Customization Options**
 
    - Enable users to customize game settings such as grid size, number of mines, and number of treasures beyond the predefined levels.
 
-7. **Cross-Platform Compatibility**
+6. **Cross-Platform Compatibility**
 
    - Optimize the game for seamless operation across different operating systems, including mobile platforms.
 
-8. **Automated Testing Suite**
+7. **Automated Testing Suite**
+
    - Develop an automated testing suite to continuously verify the integrity and functionality of the game, ensuring reliability with each update.
 
 ---
 
 ## Conclusion
 
-**Minesweeper with Hidden Treasure** successfully blends the timeless appeal of the classic Minesweeper game with innovative features that enhance gameplay and testing capabilities. By adhering to the Model-View-Controller (MVC) design pattern and incorporating Design by Contract (DBC) principles, the project ensures a clean, maintainable, and scalable codebase. The introduction of Testing Mode with CSV board loading provides developers and testers with powerful tools to validate game scenarios and maintain high-quality standards. With its dual interfaces, robust features, and thoughtful design, the game offers an engaging and reliable experience for players of all preferences.
+**Minesweeper with Hidden Treasure** successfully blends the timeless appeal of the classic Minesweeper game with innovative features that enhance gameplay and testing capabilities. By adhering to the Model-View-Controller (MVC) design pattern and incorporating Design by Contract (DBC) principles, the project ensures a clean, maintainable, and scalable codebase. The introduction of Testing Mode with CSV board loading provides developers and testers with powerful tools to validate game scenarios and maintain high-quality standards. The addition of game saving and loading enhances user convenience, allowing players to pause and resume their games at will. With its dual interfaces, robust features, and thoughtful design, the game offers an engaging and reliable experience for players of all preferences.
 
 ---
 
@@ -525,3 +606,5 @@ While the current version of **Minesweeper with Hidden Treasure** is feature-ric
 - [Model-View-Controller (MVC) Design Pattern](https://en.wikipedia.org/wiki/Model–view–controller)
 - [Design by Contract (DBC) Principles](https://en.wikipedia.org/wiki/Design_by_contract)
 - [Python CSV Module](https://docs.python.org/3/library/csv.html)
+- [Python Pickle Module](https://docs.python.org/3/library/pickle.html) (for game saving and loading)
+- [Tkinter Event Handling](https://effbot.org/tkinterbook/tkinter-events-and-bindings.htm)

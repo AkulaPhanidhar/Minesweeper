@@ -1,22 +1,29 @@
 import tkinter as tk
-from tkinter import messagebox
-from collections import deque
 import random
-import platform
-from datetime import datetime
 import csv
 import os
+import pickle
+from tkinter import messagebox
+from collections import deque
+from datetime import datetime
 
 levels = {
-    'beginner': {'size_x': 8, 'size_y': 8, 'num_mines': 10, 'num_treasures': 2},
-    'intermediate': {'size_x': 16, 'size_y': 16, 'num_mines': 40, 'num_treasures': 4},
-    'expert': {'size_x': 30, 'size_y': 16, 'num_mines': 99, 'num_treasures': 6}
+    'beginner': {'size_x': 8, 'size_y': 8, 'num_mines': 10, 'num_treasures': random.randint(1, 3)},
+    'intermediate': {'size_x': 16, 'size_y': 16, 'num_mines': 40, 'num_treasures': random.randint(4, 8)},
+    'expert': {'size_x': 30, 'size_y': 16, 'num_mines': 99, 'num_treasures': random.randint(9, 12)}
 }
 
-BTN_FLAG = "<Button-2>" if platform.system() == 'Darwin' else "<Button-3>"
+BTN_FLAG_EVENTS = ["<Button-2>", "<Button-3>", "<Control-Button-1>"]
 
 class Cell:
     def __init__(self, x, y):
+        """
+        Requires:
+            - x (int): The row index of the cell.
+            - y (int): The column index of the cell.
+        Ensures:
+            - Initializes the cell with default properties.
+        """
         self.x = x
         self.y = y
         self.is_mine = False
@@ -28,13 +35,14 @@ class Cell:
         self.text_id = None
 
 class GameModel:
-    def __init__(self, size_x, size_y, num_mines, num_treasures, test_board=None):
+    def __init__(self, size_x, size_y, num_mines, num_treasures, level_name, test_board=None):
         """
         Requires:
             - size_x (int): Number of rows on the board.
             - size_y (int): Number of columns on the board.
             - num_mines (int): Total number of mines to place.
             - num_treasures (int): Total number of treasures to place.
+            - level_name (str): Name of the game level.
             - test_board (list of lists, optional): Predefined board for testing mode.
         Ensures:
             - A board of size_x by size_y is initialized.
@@ -45,6 +53,7 @@ class GameModel:
         self.size_y = size_y
         self.num_mines = num_mines
         self.num_treasures = num_treasures
+        self.level_name = level_name
         self.board = [[Cell(x, y) for y in range(size_y)] for x in range(size_x)]
         self.mines = 0
         self.start_time = None
@@ -52,6 +61,7 @@ class GameModel:
         self.clicked_count = 0
         self.treasure_cells = []
         self.test_board = test_board
+        self.is_test_mode = test_board is not None
         if test_board:
             self.initialize_board_from_test_board(test_board)
         else:
@@ -270,6 +280,9 @@ class GameController:
                         self.view.update_cell(neighbor)
                     if neighbor.adjacent_mines == 0:
                         queue.append(neighbor)
+        total_safe_cells = self.model.size_x * self.model.size_y - self.model.mines - self.model.num_treasures
+        if self.model.clicked_count == total_safe_cells:
+            self.view.game_over(True)
 
     def restart_game(self):
         """
@@ -280,12 +293,14 @@ class GameController:
             - Resets the view.
             - Starts a new game.
         """
+        self.clear_saved_game()
         if self.model.test_board:
             self.model = GameModel(
                 self.model.size_x,
                 self.model.size_y,
                 self.model.num_mines,
                 self.model.num_treasures,
+                level_name=self.model.level_name,
                 test_board=self.model.test_board
             )
         else:
@@ -293,12 +308,36 @@ class GameController:
                 self.model.size_x,
                 self.model.size_y,
                 self.model.num_mines,
-                self.model.num_treasures
+                self.model.num_treasures,
+                level_name=self.model.level_name
             )
         self.view.model = self.model
         self.view.controller = self
         self.view.reset_view()
         self.start_game()
+
+    def save_game(self):
+        """
+        Requires:
+            - The game is in progress and not in testing mode.
+        Ensures:
+            - Saves the current game state to a file named after the level.
+        """
+        if not self.model.is_test_mode:
+            with open(f"{self.model.level_name}.sav", "wb") as f:
+                pickle.dump(self.model, f)
+
+    def clear_saved_game(self):
+        """
+        Requires:
+            - The game has ended.
+        Ensures:
+            - Removes the saved game file if it exists.
+        """
+        if not self.model.is_test_mode:
+            saved_game_file = f"{self.model.level_name}.sav"
+            if os.path.exists(saved_game_file):
+                os.remove(saved_game_file)
 
 class GUIView:
     def __init__(self, model, controller):
@@ -326,7 +365,7 @@ class GUIView:
         self.labels["mines"].pack(side='left')
         self.labels["flags"].pack(side='right')
         self.labels["treasures"].pack(side='top')
-        self.start_time = None
+        self.start_time = self.model.start_time
         if self.model.size_x <= 8:
             self.CELL_SIZE = 50
         elif self.model.size_x <= 16:
@@ -336,7 +375,14 @@ class GUIView:
         self.canvas = tk.Canvas(self.root, width=self.model.size_y * self.CELL_SIZE, height=self.model.size_x * self.CELL_SIZE)
         self.canvas.pack()
         self.canvas.bind("<Button-1>", self.on_canvas_click)
-        self.canvas.bind(BTN_FLAG, self.on_canvas_right_click)
+        for event in BTN_FLAG_EVENTS:
+            self.canvas.bind(event, self.on_canvas_right_click)
+
+        menu_bar = tk.Menu(self.root)
+        file_menu = tk.Menu(menu_bar, tearoff=0)
+        file_menu.add_command(label="Quit", command=self.on_quit)
+        menu_bar.add_cascade(label="File", menu=file_menu)
+        self.root.config(menu=menu_bar)
         self.update_timer()
 
     def draw_board(self):
@@ -369,6 +415,9 @@ class GUIView:
                     text='',
                     font=('Helvetica', max(8, int(self.CELL_SIZE / 2)))
                 )
+        for row in self.model.board:
+            for cell in row:
+                self.update_cell(cell)
         self.refresh_labels()
 
     def reset_view(self):
@@ -381,7 +430,7 @@ class GUIView:
             - Draws the new game board.
         """
         self.canvas.delete("all")
-        self.start_time = None
+        self.start_time = self.model.start_time
         self.labels["time"].config(text="00:00:00")
         self.labels["treasures"].config(text=f"Treasures: {self.model.num_treasures}")
         self.labels["mines"].config(text=f"Mines: {self.model.mines}")
@@ -426,6 +475,7 @@ class GUIView:
             - Updates the visual representation to show mines and treasures.
             - Triggers the game over message to the player.
         """
+        self.controller.clear_saved_game()
         for row in self.model.board:
             for cell in row:
                 if cell.is_mine and not cell.is_flagged:
@@ -515,6 +565,20 @@ class GUIView:
         if 0 <= x < self.model.size_x and 0 <= y < self.model.size_y:
             self.controller.on_right_click(x, y)
 
+    def on_quit(self):
+        """
+        Requires:
+            - The player has chosen to quit the game.
+        Ensures:
+            - Saves the game state if not in testing mode.
+            - Closes the game window.
+        """
+        if not self.model.is_test_mode:
+            self.controller.save_game()
+            self.root.quit()
+        else:
+            messagebox.showinfo("Quit", "Quit option is not available in testing mode.")
+
     def mainloop(self):
         """
         Requires:
@@ -536,7 +600,7 @@ class TextView:
         """
         self.model = model
         self.controller = controller
-        self.start_time = None
+        self.start_time = self.model.start_time
 
     def draw_board(self):
         """
@@ -551,7 +615,7 @@ class TextView:
             if self.model.clicked_count == total_safe_cells:
                 self.game_over(True)
                 break
-            command = input("Enter command (e.g., 'r x y' to reveal or 'f x y'). Coordinates range from 1 to 8: ")
+            command = input("Enter command (e.g., 'r x y' to reveal, 'f x y', or 'q' to quit): ")
             if not self.process_command(command):
                 break
 
@@ -594,15 +658,27 @@ class TextView:
     def process_command(self, command):
         """
         Requires:
-            - command (str): User input in the format 'r x y' or 'f x y'.
+            - command (str): User input in the format 'r x y' or 'f x y' or 'q'.
         Ensures:
             - Parses and validates the command.
             - Executes the appropriate action (reveal or flag) on the specified cell.
             - Returns True to continue the game or False to end the loop.
         """
         parts = command.strip().lower().split()
+        if not parts:
+            print("Invalid command. Please enter 'r x y', 'f x y', or 'q' to quit.")
+            return True
+        action = parts[0]
+        if action == 'q':
+            if not self.model.is_test_mode:
+                self.controller.save_game()
+                print("Game saved. Exiting.")
+                exit()
+            else:
+                print("Quit option is not available in testing mode.")
+                return True
         if len(parts) != 3:
-            print("Invalid command format. Please enter 'r x y' or 'f x y'. Coordinates range from 1 to 8.")
+            print("Invalid command format. Please enter 'r x y', 'f x y', or 'q' to quit.")
             return True
         action, x_str, y_str = parts
         try:
@@ -629,7 +705,7 @@ class TextView:
             elif action == 'f':
                 self.controller.on_right_click(x, y)
             else:
-                print("Unknown action. Use 'r' to reveal or 'f' to flag.")
+                print("Unknown action. Use 'r' to reveal, 'f' to flag, or 'q' to quit.")
         except ValueError:
             print("Invalid coordinates. Coordinates should be integers.")
         return True
@@ -640,11 +716,17 @@ class TextView:
             - The game has ended due to either a win or loss.
             - won (bool): True if the player has won, False otherwise.
         Ensures:
+            - Reveals all mines and treasures on the board.
             - Displays the final state of the board.
             - Informs the player of the game outcome.
             - Prompts the player to play again or exit.
             - Restarts the game or exits based on the player's choice.
         """
+        self.controller.clear_saved_game()
+        for row in self.model.board:
+            for cell in row:
+                if cell.is_mine or cell.has_treasure:
+                    cell.is_revealed = True
         self.print_board()
         if won:
             print("Congratulations! You found the treasure and won the game!")
@@ -667,7 +749,7 @@ class TextView:
             - Resets the start time.
             - Clears any previous game state from the view.
         """
-        self.start_time = None
+        self.start_time = self.model.start_time
 
 def load_and_validate_test_board(file_path):
     """
@@ -738,13 +820,14 @@ def main():
         - User input for selecting game level and view.
     Ensures:
         - Initializes the game model based on the selected level.
+        - Handles saved games and testing mode.
         - Launches the chosen view (GUI or Text) for gameplay.
         - Handles invalid user inputs by prompting again.
     """
     print("\nChoose a level:")
-    print("1. Beginner (8x8, 10 mines, 2 treasures)")
-    print("2. Intermediate (16x16, 40 mines, 4 treasures)")
-    print("3. Expert (30x16, 99 mines, 6 treasures)")
+    print(f"1. Beginner (8x8, 10 mines, {levels['beginner']['num_treasures']} treasures)")
+    print(f"2. Intermediate (16x16, 40 mines, {levels['intermediate']['num_treasures']} treasures)")
+    print(f"3. Expert (30x16, 99 mines, {levels['expert']['num_treasures']} treasures)")
     level_choice = input("\nEnter the number: ").strip()
     if level_choice == '1':
         level = 'beginner'
@@ -758,9 +841,22 @@ def main():
         return
     params = levels[level]
 
-    test_board = None
+    saved_game_file = f"{level}.sav"
     model = None
-    if level == 'beginner':
+    if os.path.exists(saved_game_file):
+        choice = input("Do you want to continue with the previous game or start again? (c/s): ").strip().lower()
+        if choice == 'c':
+            with open(saved_game_file, 'rb') as f:
+                model = pickle.load(f)
+        elif choice == 's':
+            model = None
+        else:
+            print("Invalid choice. Please enter 'c' or 's'.")
+            main()
+            return
+
+    test_board = None
+    if level == 'beginner' and model is None:
         while True:
             test_mode_choice = input("\nWould you like to enter testing mode? (y/n): ").strip().lower()
             if test_mode_choice == 'y':
@@ -768,7 +864,7 @@ def main():
                 valid, message, board = load_and_validate_test_board(file_path)
                 if valid:
                     treasure_count = sum(row.count(2) for row in board)
-                    model = GameModel(params['size_x'], params['size_y'], params['num_mines'], treasure_count, test_board=board)
+                    model = GameModel(params['size_x'], params['size_y'], params['num_mines'], treasure_count, level_name=level, test_board=board)
                     print(f"\nTest board is valid with {model.mines} mines and {model.num_treasures} treasures. Starting the game...")
                     break
                 else:
@@ -782,7 +878,7 @@ def main():
                 print("Invalid input. Please enter 'y' or 'n'.")
 
     if not model:
-        model = GameModel(params['size_x'], params['size_y'], params['num_mines'], params['num_treasures'])
+        model = GameModel(params['size_x'], params['size_y'], params['num_mines'], params['num_treasures'], level_name=level)
 
     print("\nChoose a view:")
     print("1. GUI")
