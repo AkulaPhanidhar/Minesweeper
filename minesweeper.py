@@ -856,7 +856,6 @@ def main():
             main()
             return
 
-    test_board = None
     if level == 'beginner' and model is None:
         while True:
             test_mode_choice = input("\nWould you like to enter testing mode? (y/n): ").strip().lower()
